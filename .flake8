@@ -1,0 +1,5 @@
+[flake8]
+min_python_version = 3.8
+ignore = E501, W503, N818
+exclude = .git,__pycache__,common_source,alembic
+dictionaries = en_US,python,technical,django

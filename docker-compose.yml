@@ -1,0 +1,53 @@
+version: '3.8'
+
+volumes:
+  cache:
+    driver: local
+  pg_data:
+    driver: local
+
+networks:
+  local-network:
+    driver: bridge
+
+services:
+  db:
+    image: library/postgres:13
+    volumes:
+      - "pg_data:/var/lib/postgresql/data"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    networks:
+      - local-network
+
+  fastapi_weather_service:
+    build: ./backend
+    environment:
+      DEBUG: "on"
+      ENVIRONMENT: development
+      DATABASE_URL: postgres://postgres:password@db:5432/postgres
+      TORTOISE_TEST_DB: postgres://postgres:password@db:5432/test_{}
+      PRE_COMMIT_HOME: /cache/.pre-commit
+      PROJECT_NAME: Fastapi Weather Service
+      OWM_API_KEY: 655dfc390726be35679ee1f171b45301
+    volumes:
+      - ./:/app/:delegated
+      - /app/frontend
+      - cache:/cache:delegated
+    command: uvicorn apps.app:app --app-dir=backend --host 0.0.0.0 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - local-network
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app:delegated
+      - /app/node_modules
+    ports:
+      - "3000:3000"

@@ -1,0 +1,18 @@
+[tool.aerich]
+tortoise_orm = "config.orm.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.towncrier]
+package = "."
+single_file = false
+filename = "{version}-notes.rst"
+directory= "release_notes"
+name = "Fastapi Weather Service"
+title_format = "{name} {version} ({project_date})"
+issue_format = "LM-{issue}"
+wrap = false
+all_bullets = true

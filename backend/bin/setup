@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# navigate to root of repo
+cd "$(dirname "$0")/../" || exit
+
+# define colors for better formatting
+COLOR_RED='\033[0;31m'
+COLOR_GREEN='\033[0;32m'
+COLOR_NONE='\033[0m'
+echo "Checking pre-requirements..."
+
+# check docker and docker-compose
+HAS_DOCKER=$(which docker)
+HAS_DOCKER_COMPOSE=$(which docker-compose)
+
+if [[ "$HAS_DOCKER" == "" || "$HAS_DOCKER_COMPOSE" == "" ]]; then
+  echo "You will need to have docker and docker-compose installed for running"
+  echo "- If you are on Mac, check out Docker for Mac at https://docs.docker.com/docker-for-mac/install/"
+  echo "- If you are on Windows, check out Docker for Windows at https://docs.docker.com/docker-for-windows/"
+  echo "- If you are on Ubuntu, check out Docker for Ubuntu at https://docs.docker.com/engine/install/ubuntu/"
+  echo "- Alternatively, check out Docker Toolbox at https://www.docker.com/products/docker-toolbox"
+  echo "  or manually install the docker and docker-compose package from your respective package manager."
+  echo -e "\n"
+  echo "We found"
+  if [[ "$HAS_DOCKER" == "" ]]; then
+    echo -e "${COLOR_RED}- No docker installation${COLOR_NONE} on your system"
+  else
+    echo -e "${COLOR_GREEN}- A docker installation${COLOR_NONE} at $HAS_DOCKER"
+  fi
+  if [[ "$HAS_DOCKER_COMPOSE" == "" ]]; then
+    echo -e "${COLOR_RED}- No docker-compose installation${COLOR_NONE} on your system"
+  else
+    echo -e "${COLOR_GREEN}- A docker-compose installation${COLOR_NONE} at $HAS_DOCKER_COMPOSE"
+  fi
+  echo -e "\n"
+  echo "Please come back after installing the missing tools."
+  exit 0
+else
+    echo -e "${COLOR_GREEN}OK!${COLOR_NONE}"
+fi
+
+INPUT_DEFAULT=" [Y/n]"
+echo -e "\n"
+# shellcheck disable=SC2162
+read -p "Everything is ready to setup. Would you like to continue $INPUT_DEFAULT? " OPEN_CONFIRM
+if [[ "$OPEN_CONFIRM" == "" ]]; then
+    OPEN_CONFIRM="y";
+fi
+if [[ "$OPEN_CONFIRM" == *"n"* || "$OPEN_CONFIRM" == *"N"* ]]; then
+    exit 0
+fi
+
+# build docker containers
+echo -e "\n${COLOR_GREEN}OK!${COLOR_NONE} We are ready to build Docker containers. "
+echo -e "\n${COLOR_GREEN}Please remember:${COLOR_NONE} The build could take a few minutes"
+echo "Just give it some time, even if it seems to be stuck for a minute."
+docker-compose build
+docker-compose up -d db && sleep 2
+
+bin/aerich upgrade
+
+echo -e "\n"
+echo -e "${COLOR_GREEN}Done!${COLOR_NONE}"
+echo -e "\n"
+echo -e "${COLOR_GREEN}Installation completed successfully.${COLOR_NONE}"
+echo -e "\n"
+
+# shellcheck disable=SC2162
+read -p "Would you like to start the docker containers right now$INPUT_DEFAULT? " OPEN_CONFIRM
+if [[ "$OPEN_CONFIRM" == "" ]]; then
+    OPEN_CONFIRM="y";
+fi
+if [[ "$OPEN_CONFIRM" == *"y"* || "$OPEN_CONFIRM" == *"Y"* ]]; then
+    docker-compose up
+else
+    echo -e "\nYou can start them manually via docker-compose up"
+fi

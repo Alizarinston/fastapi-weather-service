@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2124
+CMD="${@:-run --all-files}"
+
+# shellcheck disable=SC2086
+docker-compose run --rm --entrypoint "pre-commit" fastapi_weather_service $CMD

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+docker-compose run --rm --entrypoint "pytest" fastapi_weather_service "$@"
